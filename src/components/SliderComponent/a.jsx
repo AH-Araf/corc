@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import sliderImg1 from '../../../public/assets/images/a.png';
 import sliderImg2 from '../../../public/assets/images/b.png';
@@ -8,7 +8,7 @@ import './SliderComponent.css'
 
 const SliderImage = ({ src, alt }) => (
     <div className="relative h-full w-full overflow-hidden">
-        <Image src={src} alt={alt} layout="fill"  className="transition-opacity duration-500 ease-in-out opacity-100 w-full" />
+        <Image src={src} alt={alt} layout="fill" objectFit='contain' className="transition-opacity duration-500 ease-in-out opacity-100 w-full pt-3" />
     </div>
 );
 
@@ -55,8 +55,8 @@ const SliderComponent = () => {
 
     const slideDetails = [
         'When activated by cortisol, the glucocorticoid receptor translocates to the nucleus.',
-        'In the nucleus, activated GR promotes expression of anti-apoptotic genes, including <i>SGK1</i> and <i>DUSP1</i>.',
-        '<i>SGK1</i> and <i>DUSP1</i> suppress apoptotic pathways and reduce chemotherapy efficacy.',
+        'In the nucleus, activated GR promotes expression of anti-apoptotic genes, including SGK1 and DUSP1.',
+        'SGK-1 and DUSP1 suppress apoptotic pathways and reduce chemotherapy efficacy.',
     ];
 
     const handleChangeSlide = (index) => {
@@ -66,7 +66,7 @@ const SliderComponent = () => {
         }
     };
 
-    const handleScroll = useCallback((event) => {
+    const handleScroll = (event) => {
         if (isFullScreen) {
             const direction = event.deltaY;
 
@@ -82,27 +82,15 @@ const SliderComponent = () => {
                 }
             }
         }
-    }, [activeIndex, isFullScreen]);
-
-
-    const debounce = (func, delay) => {
-        let timeout;
-        return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func(...args), delay);
-        };
     };
 
     useEffect(() => {
-        const debouncedScroll = debounce(handleScroll, 300); 
         const handleScrollEvent = (event) => {
-            debouncedScroll(event);
+            handleScroll(event);
         };
-        window.addEventListener('wheel', handleScrollEvent, { passive: false }); 
+        window.addEventListener('wheel', handleScrollEvent, { passive: true });
         return () => window.removeEventListener('wheel', handleScrollEvent);
-    }, [handleScroll]);
-
-
+    }, [activeIndex, isFullScreen]);
 
     const checkComponentVisibility = debounce(() => {
         if (sliderRef.current) {
@@ -159,21 +147,20 @@ const SliderComponent = () => {
         <div>
             <div
                 ref={sliderRef}
-                className={`transition-transform duration-[2s] ${isFullScreen ? 'fixed inset-0 z-50 scale-100 bg-white opacity-100 flex flex-col justify-center items-center pt-3 image-width-padding' : 'relative transform scale-75 max-w-[1096px] h-[528px] w-full mx-auto  opacity-100'}`}
+                className={`transition-transform duration-[2s] ${isFullScreen ? 'fixed inset-0 z-50 scale-100 bg-white opacity-100 flex flex-col justify-center items-center' : 'relative transform scale-75 max-w-[1096px] w-full mx-auto h-[528px] opacity-100'}`}
             >
-                <div className="relative w-full image-height-responsiveness">
+                <div className="relative w-full h-full">
                     <SliderImage src={slideImages[activeIndex].src} alt={slideImages[activeIndex].alt} />
                 </div>
-                <div className={`relative w-full flex flex-col items-center ${isFullScreen ? 'absolute bottom-5' : 'bottom-5'}`}>
+                <div className={`relative w-full flex flex-col items-center ${isFullScreen ? 'absolute bottom-36 md:bottom-10 lg:bottom-5' : 'bottom-36 md:bottom-10 lg:bottom-5'}`}>
                     <div className="h-[60px] px-2 py-1.5 bg-[#E9FCF5] rounded-[32px] shadow border border-[#A7F2D7] flex justify-center items-center gap-4">
                         {slideImages.map((slide, index) => (
                             <SliderButton key={index} onClick={() => handleChangeSlide(index)} active={index === activeIndex} label={slide.label} />
                         ))}
                     </div>
-                    <div
-                        className="text-[#027373] w-[350px] md:w-[552px] font-semibold text-center text-sm md:text-xl leading-[30px] mt-4"
-                        dangerouslySetInnerHTML={{ __html: slideDetails[activeIndex] }}
-                    ></div>
+                    <div className="text-[#027373] w-[350px] md:w-[552px] font-semibold text-center text-sm md:text-xl leading-[30px] mt-4">
+                        {slideDetails[activeIndex]}
+                    </div>
                     <div className="flex space-x-2 mt-[25px]">
                         {slideImages.map((_, index) => (
                             <SliderDotIndicator key={index} active={index === activeIndex} onClick={() => handleChangeSlide(index)} />
